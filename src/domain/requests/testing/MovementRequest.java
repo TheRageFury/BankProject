@@ -5,13 +5,13 @@ import domain.Tag;
 import utilities.Time;
 import utilities.TimeComparisonResult;
 
+import java.lang.reflect.Method;
 import java.util.*;
-import java.util.stream.Stream;
 
 /**
  * This ADT represents a request for movements.<br>
  * A movement request is defined by the parameters,
- * of movement, on which is useful a research:
+ * of a movement, on which can be useful a lookup:
  *      -A range of money value quantities
  *      -A group of words, matched optionally
  *      -A range of time points delimiting the excecution
@@ -23,23 +23,39 @@ public class MovementRequest extends PredicateRequest {
     private double[] rangeQuantity;
     private Collection<String> wordsDescription;
     private Time[] rangeTime;
-    private Collection<Tag> mandatoryTags;
-    private Collection<Tag> optionalTags;
+    private Collection<Tag> tags;
 
-    private MovementRequest(double[] rangeQuantity, Collection<String> wordsDescription, Time[] rangeTime, Collection<Tag> mandatoryTags, Collection<Tag> optionalTags){
+    private MovementRequest(double[] rangeQuantity, Collection<String> wordsDescription, Time[] rangeTime, Collection<Tag> tags){
         this.rangeQuantity = rangeQuantity;
         this.wordsDescription = wordsDescription;
         this.rangeTime = rangeTime;
-        this.mandatoryTags = mandatoryTags;
-        this.optionalTags = optionalTags;
+        this.tags = tags;
     }
 
     @Override
-    protected boolean isValidInput(Object toTest) {
+    public boolean isSuitable(Object toTest) {
         return toTest.getClass() == Movement.class;
     }
 
-    //TODO: In each brick add a null point checking expression (and return based on mode)
+    @Override
+    protected boolean orCombiner(Movement movement) {
+        boolean combined = false;
+        if(rangeQuantity != null) {combined = rangeQuantityTester(movement);}
+        if(wordsDescription != null) {combined = combined || wordsDescriptionTester(movement);}
+        if(rangeTime != null) {combined = combined || rangeTimeTester(movement);}
+        if(tags != null) {combined = combined || tagsTester(movement);}
+        return combined;
+    }
+
+    @Override
+    protected boolean andCombiner(Movement movement) {
+        boolean combined = true;
+        if(rangeQuantity != null) {combined = rangeQuantityTester(movement);}
+        if(wordsDescription != null) {combined = combined && wordsDescriptionTester(movement);}
+        if(rangeTime != null) {combined = combined && rangeTimeTester(movement);}
+        if(tags != null) {combined = combined && tagsTester(movement);}
+        return combined;
+    }
 
     private boolean rangeQuantityTester(Movement toTest) {
         return (toTest.getQuantity() >= rangeQuantity[0] && toTest.getQuantity() <= rangeQuantity[1]);
@@ -56,35 +72,23 @@ public class MovementRequest extends PredicateRequest {
     }
 
     private boolean rangeTimeTester(Movement toTest){
-        return  ((toTest.getTime().compare(rangeTime[0]) == TimeComparisonResult.AFTER) || (toTest.getTime().compare(rangeTime[0]) == TimeComparisonResult.EQUALS)) &&
-                ((toTest.getTime().compare(rangeTime[1]) == TimeComparisonResult.BEFORE) || (toTest.getTime().compare(rangeTime[1]) == TimeComparisonResult.EQUALS));
+        TimeComparisonResult testStartingTime = toTest.getTime().compare(rangeTime[0]);
+        TimeComparisonResult testEndingTime = toTest.getTime().compare(rangeTime[1]);
+
+        return  ((testStartingTime == TimeComparisonResult.AFTER) || (testStartingTime == TimeComparisonResult.EQUALS)) &&
+                ((testEndingTime == TimeComparisonResult.BEFORE) || (testEndingTime == TimeComparisonResult.EQUALS));
     }
 
-    private boolean tagsTester(Movement toTest) {
-        //It's false when mand...Tags() is false but opt...Tags() is true
-        return Boolean.compare(mandatoryTagsTester(toTest), optionalTagsTester(toTest)) >= 0;
-    }
-
-    private boolean mandatoryTagsTester(Movement toTest){
-        boolean isValid = true;
+    private boolean tagsTester(Movement toTest){
+        boolean doesItMatch = true;
         Iterator<Tag> itTags = toTest.getTags().iterator();
-        while(itTags.hasNext()) {
+        while(itTags.hasNext() && doesItMatch) {
             Tag tag = itTags.next();
-            if(isValid && !this.mandatoryTags.contains(tag)){
-                isValid = false;
+            if(!this.tags.contains(tag)){
+                doesItMatch = false;
             }
         }
-        return isValid;
-    }
-
-    private boolean optionalTagsTester(Movement toTest) {
-        Iterator<String> itWords = wordsDescription.iterator();
-        while (itWords.hasNext()) {
-            String word = itWords.next();
-            if(toTest.getDescription().contains(word))
-                return true;
-        }
-        return false;
+        return doesItMatch;
     }
 
     /**
@@ -94,8 +98,7 @@ public class MovementRequest extends PredicateRequest {
         private double[] rangeQuantity = null;
         private Collection<String> wordsDescription = null;
         private Time[] rangeTime = null;
-        private Collection<Tag> mandatoryTags = null;
-        private Collection<Tag> optionalTags = null;
+        private Collection<Tag> tags = null;
 
         /**
          * Creates a new movement request builder.
@@ -166,30 +169,21 @@ public class MovementRequest extends PredicateRequest {
 
         /**
          * Sets the group of tags (a copy) to search.<br>
-         * The parameter optionalTags can be null to indicate that optional tags aren't required.<br>
          * Raises NullPointerException if mandatoryTags is null.<br>
          * Raises IllegalArgumentException if:<br>
          *      -mandatoryTags represents the empty collection.<br>
-         *      -optionalTags isn't null and represents the empty collection
          *
          * @param mandatoryTags The group of mandatory tags to search
-         * @param optionalTags The group of optional tags to search
          */
-        public MovementRequestBuilder withTags(Collection<Tag> mandatoryTags, Collection<Tag> optionalTags){
+        public MovementRequestBuilder withTags(Collection<Tag> mandatoryTags){
             if(mandatoryTags == null){
                 throw new NullPointerException("Mandatory tags are null");
             }
             if(mandatoryTags.size() <= 0){
                 throw new IllegalArgumentException("Mandatory tags must not be empty");
             }
-            if(optionalTags != null && optionalTags.size() <= 0){
-                throw new IllegalArgumentException("If optional tags are wanted they must be not empty (else set to null)");
-            }
 
-            this.mandatoryTags = new ArrayList<>(mandatoryTags);
-            if(optionalTags != null){
-                this.optionalTags = new ArrayList<>(optionalTags);
-            }
+            this.tags = new ArrayList<>(mandatoryTags);
             return this;
         }
 
@@ -200,11 +194,11 @@ public class MovementRequest extends PredicateRequest {
          * @return A new request for searching movements
          */
         public MovementRequest build(){
-            if(rangeQuantity == null && rangeTime == null && wordsDescription == null && mandatoryTags == null && optionalTags == null){
+            if(rangeQuantity == null && rangeTime == null && wordsDescription == null && tags == null){
                 throw new IllegalStateException("At least one parameter must be set to request");
             }
 
-            return new MovementRequest(rangeQuantity, wordsDescription, rangeTime, mandatoryTags, optionalTags);
+            return new MovementRequest(rangeQuantity, wordsDescription, rangeTime, tags);
         }
     }
 }

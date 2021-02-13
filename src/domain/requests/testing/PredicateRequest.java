@@ -2,20 +2,26 @@ package domain.requests.testing;
 
 import domain.Movement;
 
-import java.util.Arrays;
-import java.util.List;
 import java.util.function.Predicate;
 
+/**
+ * This abstraction represents a request whose functioning is
+ * based on a predicate object.
+ */
 public abstract class PredicateRequest implements Request{
-    protected Predicate<Object> tester;
+    private Predicate<Object> tester;
+    private RequestMode lastRequestMode = null;
 
     @Override
     public boolean doesItMatch(Object toTest,  RequestMode mode) {
         if(toTest == null)
             throw new NullPointerException("The object to search given is null");
-        if (!isValidInput(toTest))
+        if(!isSuitable(toTest))
             throw new IllegalArgumentException("The object to search given is not suitable for this type of request");
-        setupTester(mode);
+        if(mode != lastRequestMode){
+            setupTester(mode);
+            lastRequestMode = mode;
+        }
         return tester.test(toTest);
     }
 
@@ -32,17 +38,22 @@ public abstract class PredicateRequest implements Request{
         }
     }
 
-    private boolean orCombiner(Movement movement){
-        return false;
-    }
+    /**
+     * Evaluate, in OR modality, the parameters of this request.
+     *
+     * @param movement The movement to be checked
+     * @return  True - if movement match this request with the OR modality
+     *          False - otherwise
+     */
+    protected abstract boolean orCombiner(Movement movement);
 
-    private boolean andCombiner(Movement movement){
-        //TODO: E se lo passassi al piano di sopra??
-        //TODO: (del tipo che prende i risultati delle funzioni e concatena)
-        //TODO:           VVVVV
-        return false;
-    }
-
-    protected abstract boolean isValidInput(Object toTest);
+    /**
+     * Evaluate, in AND modality, the parameters of this request.
+     *
+     * @param movement The movement to be checked
+     * @return  True - if movement match this request with the AND modality
+     *          False - otherwise
+     */
+    protected abstract boolean andCombiner(Movement movement);
 }
 
