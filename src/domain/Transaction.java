@@ -1,5 +1,8 @@
 package domain;
 
+import domain.requests.RequestedObjectType;
+import domain.requests.Testable;
+
 import java.util.Date;
 import java.util.*;
 
@@ -8,7 +11,7 @@ import java.util.*;
  * A transaction represents a group of movements, which group is defined by the same date<br>
  * in which the movements occur, the same meaning given to their quantity of money value (a quantity of credit or debit)
  */
-public class Transaction {
+public class Transaction implements Testable {
     private String description;
     private TransactionType type;
     private Date date;
@@ -57,10 +60,8 @@ public class Transaction {
         this.movements.add(movement);
         movement.setTransaction(this);
 
-        Iterator<Tag> itTags = movement.getTags().iterator();
-        while(itTags.hasNext()){
-            Tag tag = itTags.next();
-            if(!this.tags.contains(tag)){
+        for (Tag tag : movement.getTags()) {
+            if (!this.tags.contains(tag)) {
                 this.tags.add(tag);
             }
         }
@@ -89,13 +90,11 @@ public class Transaction {
 
         Collection<Tag> stillUsed = new ArrayList<>();
 
-        Iterator<Movement> itMovements = this.movements.iterator();
-        while(itMovements.hasNext()){
-            Collection<Tag> currMovementTags = itMovements.next().getTags();
-            Iterator<Tag> itTags = movement.getTags().iterator();
-            while(itTags.hasNext()){
-                Tag currTag = itTags.next();
-                if(currMovementTags.contains(currTag) && !stillUsed.contains(currTag)){
+        for (Movement value : this.movements) {
+            Collection<Tag> currMovementTags = value.getTags();
+
+            for (Tag currTag : movement.getTags()) {
+                if (currMovementTags.contains(currTag) && !stillUsed.contains(currTag)) {
                     stillUsed.add(currTag);
                 }
             }
@@ -119,7 +118,7 @@ public class Transaction {
      *
      * @return The type of this transaction
      */
-    public TransactionType getType() {
+    public TransactionType getTransactionType() {
         return type;
     }
 
@@ -145,9 +144,14 @@ public class Transaction {
         if (o == null || getClass() != o.getClass()) return false;
         Transaction that = (Transaction) o;
         return getDescription().equals(that.getDescription()) &&
-                getType() == that.getType() &&
+                getTransactionType() == that.getTransactionType() &&
                 getDate().equals(that.getDate()) &&
                 getTags().equals(that.getTags()) &&
                 movements.equals(that.movements);
+    }
+
+    @Override
+    public RequestedObjectType getType() {
+        return RequestedObjectType.TRANSACTION;
     }
 }

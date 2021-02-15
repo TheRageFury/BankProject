@@ -1,5 +1,7 @@
 package domain;
 
+import domain.requests.RequestedObjectType;
+import domain.requests.Testable;
 import utilities.Time;
 
 import java.util.ArrayList;
@@ -15,7 +17,7 @@ import java.util.Collection;
  * -The description which specifies the meaning of the movement<br>
  * -The time (hour, minute, second) in which the movement has taken/will take place<br>
  */
-public class Movement {
+public class Movement implements Testable {
     private double quantity;
     private String description;
     private Transaction transaction;
@@ -109,5 +111,10 @@ public class Movement {
                 getTransaction().equals(movement.getTransaction()) &&
                 getTime().equals(movement.getTime()) &&
                 getTags().equals(movement.getTags());
+    }
+
+    @Override
+    public RequestedObjectType getType() {
+        return RequestedObjectType.MOVEMENT;
     }
 }

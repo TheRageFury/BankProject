@@ -1,22 +1,20 @@
-package domain.requests.testing;
+package domain.requests;
 
 import domain.Movement;
 import domain.Tag;
 import utilities.Time;
 import utilities.TimeComparisonResult;
-
-import java.lang.reflect.Method;
 import java.util.*;
 
 /**
  * This ADT represents a request for movements.<br>
  * A movement request is defined by the parameters,
- * of a movement, on which can be useful a lookup:
- *      -A range of money value quantities
- *      -A group of words, matched optionally
- *      -A range of time points delimiting the excecution
- *      -A group of mandatory tags that MUST BE MATCHED in movement' tags collection
- *      -A group of optional tags that CAN BE MATCHED in movemnt' tags collection
+ * of a movement, on which can be useful a lookup:<br>
+ *      -A range of money value quantities<br>
+ *      -A group of words, matched PARTIALLY (at least one)<br>
+ *      -A range of time points delimiting the excecution<br>
+ *      -A group of tags, matched COMPLETELY (all of them)<br>
+ *       in movement' tags collection
  *
  */
 public class MovementRequest extends PredicateRequest {
@@ -33,12 +31,13 @@ public class MovementRequest extends PredicateRequest {
     }
 
     @Override
-    public boolean isSuitable(Object toTest) {
-        return toTest.getClass() == Movement.class;
+    public boolean isSuitable(Testable toTest) {
+        return toTest.getType() == RequestedObjectType.MOVEMENT;
     }
 
     @Override
-    protected boolean orCombiner(Movement movement) {
+    protected boolean orCombiner(Testable toTest) {
+        Movement movement = (Movement) toTest;
         boolean combined = false;
         if(rangeQuantity != null) {combined = rangeQuantityTester(movement);}
         if(wordsDescription != null) {combined = combined || wordsDescriptionTester(movement);}
@@ -48,7 +47,8 @@ public class MovementRequest extends PredicateRequest {
     }
 
     @Override
-    protected boolean andCombiner(Movement movement) {
+    protected boolean andCombiner(Testable toTest) {
+        Movement movement = (Movement) toTest;
         boolean combined = true;
         if(rangeQuantity != null) {combined = rangeQuantityTester(movement);}
         if(wordsDescription != null) {combined = combined && wordsDescriptionTester(movement);}
@@ -62,10 +62,8 @@ public class MovementRequest extends PredicateRequest {
     }
 
     private boolean wordsDescriptionTester(Movement toTest) {
-        Iterator<String> itWords = wordsDescription.iterator();
-        while (itWords.hasNext()) {
-            String word = itWords.next();
-            if(toTest.getDescription().contains(word))
+        for (String word : wordsDescription) {
+            if (toTest.getDescription().contains(word))
                 return true;
         }
         return false;
@@ -128,7 +126,7 @@ public class MovementRequest extends PredicateRequest {
         }
 
         /**
-         * Sets a copy of the words given to search in the description.<br>
+         * Sets the words given (a copy) to search in the description.<br>
          * At least two words must match eachother.<br>
          * Raises NullPointerException if words is null.<br>
          * Raises IllegalArgumentException if words represents the empty collection.
@@ -173,17 +171,17 @@ public class MovementRequest extends PredicateRequest {
          * Raises IllegalArgumentException if:<br>
          *      -mandatoryTags represents the empty collection.<br>
          *
-         * @param mandatoryTags The group of mandatory tags to search
+         * @param tags The group of tags to search
          */
-        public MovementRequestBuilder withTags(Collection<Tag> mandatoryTags){
-            if(mandatoryTags == null){
-                throw new NullPointerException("Mandatory tags are null");
+        public MovementRequestBuilder withTags(Collection<Tag> tags){
+            if(tags == null){
+                throw new NullPointerException("Tags are null");
             }
-            if(mandatoryTags.size() <= 0){
-                throw new IllegalArgumentException("Mandatory tags must not be empty");
+            if(tags.size() <= 0){
+                throw new IllegalArgumentException("Tags must not be empty");
             }
 
-            this.tags = new ArrayList<>(mandatoryTags);
+            this.tags = new ArrayList<>(tags);
             return this;
         }
 

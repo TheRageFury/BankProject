@@ -1,9 +1,13 @@
-package domain.requests.testing;
+package domain.requests;
 
 /**
- *
+ * This interface specifies an abstraction on a any-type request.<br>
+ * Abstractly a request can be seen as:
+ *      -An operation to test if a given object, with a certain<br>
+ *       modality, match or not this request
+ *      -An operation to know if a given object is suitable or not<br>
+ *       for this request to test
  */
-//TODO: Add interface contract
 public interface Request {
 
     /**
@@ -16,7 +20,7 @@ public interface Request {
      * @return  True - if toTest matches this request (with the specific modality)<br>
      *          False - otherwise
      */
-    boolean doesItMatch(Object toTest, RequestMode mode);
+    boolean doesItMatch(Testable toTest, RequestMode mode);
 
     /**
      * Tests if the type of the object given, is suitable to be handled by this request.<br>
@@ -26,5 +30,5 @@ public interface Request {
      * @return  True - if the object's type is suitable<br>
      *          False - otherwise
      */
-    boolean isSuitable(Object toTest);
+    boolean isSuitable(Testable toTest);
 }

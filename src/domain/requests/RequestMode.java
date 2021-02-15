@@ -1,4 +1,4 @@
-package domain.requests.testing;
+package domain.requests;
 
 public enum RequestMode {
     AND,
