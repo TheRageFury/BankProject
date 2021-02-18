@@ -53,11 +53,15 @@ public class Movement implements Requestable {
 
     /**
      * Link this movement to the transaction given.<br>
-     * Raises {@code NullPointerException} if transaction is null.
+     * Raises {@code IllegalStateException} if this movement is already linked to another transaction<br>
+     *                                      and transaction is not null
      *
      * @param transaction The transaction to which this movement will be linked to
      */
     public void setTransaction(Transaction transaction) {
+        if(this.getTransaction() != null && transaction != null){
+            throw new IllegalStateException("This movement is already linked. First unlink it from its current transaction");
+        }
         this.transaction = transaction;
     }
 

@@ -79,6 +79,93 @@ public class Budget {
     }
 
     /**
+     * Gives the transactions of this budget that are, or not, scheduled.
+     *
+     * @param future True - means that are wanted scheduled transactions<br>
+     *               False - means that are wanted not scheduled ones
+     * @return  A list of transactions, in which everyone match the criteria selected<br>
+     *          or null if none are found.
+     */
+    public List<Transaction> getTransactions(boolean future) {
+        List<Transaction> result = new ArrayList<>();
+        Iterator<Transaction> itTrans = iterator();
+        while (itTrans.hasNext()) {
+            Transaction transaction = itTrans.next();
+            if((transaction.isScheduled() && future) || (!transaction.isScheduled() && !future)){
+                result.add(transaction);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Gives the transactions of this budget that are of the type requested.<br>
+     * Raises {@code NullPointerException} if type is null.
+     *
+     * @param type The type of transactions to find
+     * @return  A list of transactions, in which everyone match the criteria selected<br>
+     *          or null if none are found.
+     */
+    public List<Transaction> getTransactions(TransactionType type){
+        if(type == null){
+            throw new NullPointerException("Type is null");
+        }
+
+        List<Transaction> result = new ArrayList<>();
+        Iterator<Transaction> itTrans = iterator();
+        while(itTrans.hasNext()){
+            Transaction transaction = itTrans.next();
+            if(transaction.getTransactionType() == type){
+                result.add(transaction);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Add a transaction to this budget automatically linking it.<br>
+     * MODIFY:  If no exception is thrown:<br>
+     *          -Adding the transaction to this budget<br>
+     *          -Replacing transaction's link with this budget<br>
+     * <br>
+     * Raises {@code NullPointerException} if transaction is null.<br>
+     * Raises {@code IllegalStateException} if transaction is part of another budget.
+     *
+     * @param transaction The transaction to be added to this budget
+     */
+    public void addTransaction(Transaction transaction) {
+        if(transaction == null){
+            throw new NullPointerException("Transaction is null");
+        }
+
+        transaction.setBudget(this);
+        this.transactions.add(transaction);
+    }
+
+    /**
+     * Remove a transaction from this budget automatically unlinking it.<br>
+     * MODIFY If no exception is thrown:<br>
+     *          -Removing the transaction from this budget<br>
+     *          -Replacing transaction's link with null<br>
+     * <br>
+     * Raises {@code NullPointerException} if transaction is null.<br>
+     * Raises {@code IllegalStateException} if transaction is not part of this budget.
+     *
+     * @param transaction The transaction to be removed from this budget
+     */
+    public void removeTransaction(Transaction transaction){
+        if(transaction == null){
+            throw new NullPointerException("Transaction is null");
+        }
+        if(!this.equals(transaction.getBudget()) || !this.transactions.contains(transaction)){
+            throw new IllegalStateException("Tranasaction must be part of this budget");
+        }
+
+        transaction.setBudget(null);
+        this.transactions.remove(transaction);
+    }
+
+    /**
      * Calculate the amount of this budget at the date and time specified.<br>
      * Raises {@code NullPointerException} if date or time are null.
      *
@@ -109,26 +196,4 @@ public class Budget {
         }
         return result;
     }
-
-    /**
-     * Gives the transactions of this budget that are, or not, scheduled.
-     *
-     * @param future True - means that are wanted scheduled transactions<br>
-     *               False - means that are wanted not scheduled ones
-     * @return  The list of transactions that match the criteria selected<br>
-     *          or null if none are found.
-     */
-    public List<Transaction> getTransactions(boolean future) {
-        List<Transaction> result = new ArrayList<>();
-        Iterator<Transaction> itTrans = iterator();
-        while (itTrans.hasNext()) {
-            Transaction transaction = itTrans.next();
-            if((transaction.isScheduled() && future) || (!transaction.isScheduled() && !future)){
-                result.add(transaction);
-            }
-        }
-        return result;
-    }
-
-    //TODO: Finish Budget
 }

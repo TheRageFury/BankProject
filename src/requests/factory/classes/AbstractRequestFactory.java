@@ -3,7 +3,6 @@ package requests.factory.classes;
 import requests.Request;
 import requests.applicable.RequestBuilder;
 import requests.factory.RequestFactory;
-import requests.factory.specifiers.MovementRequestParameters;
 
 import java.util.Iterator;
 import java.util.Map;
@@ -32,6 +31,8 @@ public abstract class AbstractRequestFactory<K extends Enum<K>> implements Reque
 
     /**
      * Setup the builder to prepare the request with the parameters given.<br>
+     * Raises {@code IllegalArgumentException} if any entry in args doesn't respect
+     * the domain of values established by the corresponding request concretization.<br>
      */
     protected abstract RequestBuilder setupBuilder(Map<K, Object>  args);
 }
