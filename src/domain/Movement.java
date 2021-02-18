@@ -1,8 +1,8 @@
 package domain;
 
-import domain.requests.RequestedObjectType;
-import domain.requests.Testable;
-import utilities.Time;
+import requests.RequestedObjectType;
+import requests.applicable.Requestable;
+import utilities.time.Time;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -17,7 +17,7 @@ import java.util.Collection;
  * -The description which specifies the meaning of the movement<br>
  * -The time (hour, minute, second) in which the movement has taken/will take place<br>
  */
-public class Movement implements Testable {
+public class Movement implements Requestable {
     private double quantity;
     private String description;
     private Transaction transaction;
@@ -27,8 +27,8 @@ public class Movement implements Testable {
     /**
      * Creates a new movement given the quantity of money value, the description, a time object (which day, month
      * and year will be ignored) and a collection of tags.<br>
-     * Raises NullPointerException if description, time or tags are null.<br>
-     * Raises IllegalArgumentException if: <br>
+     * Raises {@code NullPointerException} if description, time or tags are null.<br>
+     * Raises {@code IllegalArgumentException} if: <br>
      *     -Description or tags represents, respectively, the empty string or the empty collection.<br>
      *     -Quantity of money value is zero or negative
      *
@@ -53,7 +53,7 @@ public class Movement implements Testable {
 
     /**
      * Link this movement to the transaction given.<br>
-     * Raises NullPointerException if transaction is null.
+     * Raises {@code NullPointerException} if transaction is null.
      *
      * @param transaction The transaction to which this movement will be linked to
      */

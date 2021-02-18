@@ -1,4 +1,6 @@
-package utilities;
+package utilities.time;
+
+import java.util.concurrent.TimeUnit;
 
 /**
  * This ADT represents a time.<br>
@@ -12,6 +14,18 @@ public class Time {
     private int hour;
     private int minute;
     private int second;
+
+    /**
+     *
+     * @return The time object representing the current time point according to the underlying system
+     */
+    public static Time now(){
+        long timestamp = System.currentTimeMillis();
+        int seconds = (int) TimeUnit.MILLISECONDS.toSeconds(timestamp) % 60;
+        int minutes = (int) TimeUnit.MILLISECONDS.toMinutes(timestamp) % 60;
+        int hours = (int) (TimeUnit.MILLISECONDS.toHours(timestamp) % (24)) + 1;
+        return new Time(hours, minutes, seconds);
+    }
 
     /**
      * Creates a new time with the given hour, minute and second.<br>

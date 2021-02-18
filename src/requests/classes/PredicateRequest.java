@@ -1,4 +1,8 @@
-package domain.requests;
+package requests.classes;
+
+import requests.Request;
+import requests.RequestMode;
+import requests.applicable.Requestable;
 
 import java.util.function.Predicate;
 
@@ -6,20 +10,16 @@ import java.util.function.Predicate;
  * This abstraction represents a request whose functioning is
  * based on a predicate object.
  */
-public abstract class PredicateRequest implements Request{
-    private Predicate<Testable> tester;
-    private RequestMode lastRequestMode = null;
+public abstract class PredicateRequest implements Request {
+    private Predicate<Requestable> tester;
 
     @Override
-    public boolean doesItMatch(Testable toTest, RequestMode mode) {
+    public boolean doesItMatch(Requestable toTest, RequestMode mode) {
         if(toTest == null)
             throw new NullPointerException("The object to search given is null");
         if(!isSuitable(toTest))
             throw new IllegalArgumentException("The object to search given is not suitable for this type of request");
-        if(mode != lastRequestMode){
-            setupTester(mode);
-            lastRequestMode = mode;
-        }
+        setupTester(mode);
         return tester.test(toTest);
     }
 
@@ -38,7 +38,7 @@ public abstract class PredicateRequest implements Request{
      * @return  True - if and only if the testable is suitable, and it match this request with the OR modality
      *          False - otherwise
      */
-    protected abstract boolean orCombiner(Testable toTest);
+    protected abstract boolean orCombiner(Requestable toTest);
 
     /**
      * Evaluate, in AND modality, if the parameters of this request
@@ -48,6 +48,6 @@ public abstract class PredicateRequest implements Request{
      * @return  True - if and only if the testable is suitable, and it match this request with the AND modality
      *          False - otherwise
      */
-    protected abstract boolean andCombiner(Testable toTest);
+    protected abstract boolean andCombiner(Requestable toTest);
 }
 

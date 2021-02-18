@@ -1,9 +1,12 @@
-package domain.requests;
+package requests.classes;
 
 import domain.Movement;
 import domain.Tag;
-import utilities.Time;
-import utilities.TimeComparisonResult;
+import requests.RequestedObjectType;
+import requests.applicable.RequestBuilder;
+import requests.applicable.Requestable;
+import utilities.time.Time;
+import utilities.time.TimeComparisonResult;
 import java.util.*;
 
 /**
@@ -31,12 +34,12 @@ public class MovementRequest extends PredicateRequest {
     }
 
     @Override
-    public boolean isSuitable(Testable toTest) {
+    public boolean isSuitable(Requestable toTest) {
         return toTest.getType() == RequestedObjectType.MOVEMENT;
     }
 
     @Override
-    protected boolean orCombiner(Testable toTest) {
+    protected boolean orCombiner(Requestable toTest) {
         Movement movement = (Movement) toTest;
         boolean combined = false;
         if(rangeQuantity != null) {combined = rangeQuantityTester(movement);}
@@ -47,7 +50,7 @@ public class MovementRequest extends PredicateRequest {
     }
 
     @Override
-    protected boolean andCombiner(Testable toTest) {
+    protected boolean andCombiner(Requestable toTest) {
         Movement movement = (Movement) toTest;
         boolean combined = true;
         if(rangeQuantity != null) {combined = rangeQuantityTester(movement);}
@@ -92,7 +95,7 @@ public class MovementRequest extends PredicateRequest {
     /**
      * Builder for a movement request
      */
-    public static class MovementRequestBuilder {
+    public static class MovementRequestBuilder implements RequestBuilder {
         private double[] rangeQuantity = null;
         private Collection<String> wordsDescription = null;
         private Time[] rangeTime = null;
@@ -105,7 +108,7 @@ public class MovementRequest extends PredicateRequest {
 
         /**
          * Sets the range of money value's quantity to search.<br>
-         * Raises IllegalArgumentException if:<br>
+         * Raises {@code IllegalArgumentException} if:<br>
          *      -Min or max are 0 or negative<br>
          *      -Min is greater than max
          *
@@ -128,8 +131,8 @@ public class MovementRequest extends PredicateRequest {
         /**
          * Sets the words given (a copy) to search in the description.<br>
          * At least two words must match eachother.<br>
-         * Raises NullPointerException if words is null.<br>
-         * Raises IllegalArgumentException if words represents the empty collection.
+         * Raises {@code NullPointerException} if words is null.<br>
+         * Raises {@code IllegalArgumentException} if words represents the empty collection.
          *
          * @param words The group of words, in movement's description, for a movement to match this request
          */
@@ -147,8 +150,8 @@ public class MovementRequest extends PredicateRequest {
 
         /**
          * Sets the range of time to search.<br>
-         * Raises NullPointerException if from or to are null.<br>
-         * Raises IllegalArgumentException if from is before to.
+         * Raises {@code NullPointerException} if from or to are null.<br>
+         * Raises {@code IllegalArgumentException} if from is before to.
          *
          * @param from The starting time for a movement to match this request (included)
          * @param to The ending time for a movement to match this request (included)
@@ -167,8 +170,8 @@ public class MovementRequest extends PredicateRequest {
 
         /**
          * Sets the group of tags (a copy) to search.<br>
-         * Raises NullPointerException if mandatoryTags is null.<br>
-         * Raises IllegalArgumentException if:<br>
+         * Raises {@code NullPointerException} if mandatoryTags is null.<br>
+         * Raises {@code IllegalArgumentException} if:<br>
          *      -mandatoryTags represents the empty collection.<br>
          *
          * @param tags The group of tags to search
@@ -187,10 +190,11 @@ public class MovementRequest extends PredicateRequest {
 
         /**
          * Builds a new request for movements after setting at least 1 parameter to match.<br>
-         * Raises IllegalStateException if none of the parameters has been set<br>
+         * Raises {@code IllegalStateException} if none of the parameters has been set<br>
          *
          * @return A new request for searching movements
          */
+        @Override
         public MovementRequest build(){
             if(rangeQuantity == null && rangeTime == null && wordsDescription == null && tags == null){
                 throw new IllegalStateException("At least one parameter must be set to request");

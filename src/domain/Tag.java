@@ -9,8 +9,8 @@ public class Tag {
 
     /**
      * Creates a new tag with the given name and description.<br>
-     * Raises NullPointerException if name or description are null.<br>
-     * Raises IllegalArgumentException if name or description represent the empty string<br>
+     * Raises {@code NullPointerException} if name or description are null.<br>
+     * Raises {@code IllegalArgumentException} if name or description represent the empty string<br>
      *
      * @param name The name given to the new tag
      * @param description The description given to the new tag

@@ -1,7 +1,10 @@
 package domain;
 
-import domain.requests.RequestedObjectType;
-import domain.requests.Testable;
+import domain.iterators.BaseIterator;
+import requests.RequestedObjectType;
+import requests.applicable.Requestable;
+import utilities.time.Time;
+import utilities.time.TimeComparisonResult;
 
 import java.util.Date;
 import java.util.*;
@@ -11,7 +14,7 @@ import java.util.*;
  * A transaction represents a group of movements, which group is defined by the same date<br>
  * in which the movements occur, the same meaning given to their quantity of money value (a quantity of credit or debit)
  */
-public class Transaction implements Testable {
+public class Transaction implements Requestable {
     private String description;
     private TransactionType type;
     private Date date;
@@ -20,8 +23,8 @@ public class Transaction implements Testable {
 
     /**
      * Creates a new transaction given the description, date and type.<br>
-     * Raises NullPointerException if description or date are null.<br>
-     * Raises IllegalArgumentException if description represents the empty string
+     * Raises {@code NullPointerException} if description or date are null.<br>
+     * Raises {@code IllegalArgumentException} if description represents the empty string
      *
      * @param description The description of the new transaction
      * @param date The date in which the transaction has been/will be executed
@@ -49,7 +52,7 @@ public class Transaction implements Testable {
      *          -Replacing movement's link with this transaction<br>
      *          -Adding, if not already there, movement' tags.<br>
      * <br>
-     * Raises NullPointerException if the movement is null.
+     * Raises {@code NullPointerException} if the movement is null.
      * @param movement The movement to be added to this transaction
      */
     public void addMovement(Movement movement){
@@ -72,9 +75,9 @@ public class Transaction implements Testable {
      * MODIFY If no exception is thrown:<br>
      *          -Removing the movement from this transaction<br>
      *          -Replacing movement's link with null<br>
-     *          -Removing its movement' tags. (if it was the only containing them)<br>
+     *          -Removing its movement' tags. (if it was the only using them)<br>
      * <br>
-     * Raises NullPointerException if the movement is null.
+     * Raises {@code NullPointerException} if the movement is null.
      * @param movement The movement to be removed from this transaction
      */
     public void removeMovement(Movement movement){
@@ -108,6 +111,14 @@ public class Transaction implements Testable {
 
     /**
      *
+     * @return An immutable iterator over this transaction' movements
+     */
+    public Iterator<Movement> iterator() {
+        return new BaseIterator<>(this.movements);
+    }
+
+    /**
+     *
      * @return The description of this transaction
      */
     public String getDescription() {
@@ -136,6 +147,27 @@ public class Transaction implements Testable {
      */
     public Collection<Tag> getTags() {
         return new ArrayList<>(tags);
+    }
+
+    /**
+     *
+     * @return  True - if every movement in this transaction has a time greater than now<br>
+     *                 and the date of this transaction is greater than (or equal) now<br>
+     *          False - otherwise
+     */
+    public boolean isScheduled(){
+        if(this.getDate().before(new Date())){
+            return false;
+        }
+        boolean isScheduled = true;
+        Iterator<Movement> itMovs = iterator();
+        while(itMovs.hasNext() && isScheduled) {
+            Movement movement = itMovs.next();
+            if(movement.getTime().compare(Time.now()) != TimeComparisonResult.AFTER){
+                isScheduled = false;
+            }
+        }
+        return isScheduled;
     }
 
     @Override

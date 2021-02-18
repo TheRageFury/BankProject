@@ -1,8 +1,11 @@
-package domain.requests;
+package requests.classes;
 
 import domain.Tag;
 import domain.Transaction;
 import domain.TransactionType;
+import requests.RequestedObjectType;
+import requests.applicable.RequestBuilder;
+import requests.applicable.Requestable;
 
 import java.util.*;
 
@@ -16,7 +19,7 @@ import java.util.*;
  *      -A group of tags, matched COMPLETELY (all of them)<br>
  *       in movement' tags collection
  */
-public class TransactionRequest extends PredicateRequest{
+public class TransactionRequest extends PredicateRequest {
     private TransactionType transType;
     private Collection<String> wordsDescription;
     private Date[] rangeDates;
@@ -30,12 +33,12 @@ public class TransactionRequest extends PredicateRequest{
     }
 
     @Override
-    public boolean isSuitable(Testable toTest) {
+    public boolean isSuitable(Requestable toTest) {
         return toTest.getType() == RequestedObjectType.TRANSACTION;
     }
 
     @Override
-    protected boolean orCombiner(Testable toTest) {
+    protected boolean orCombiner(Requestable toTest) {
         Transaction transaction = (Transaction) toTest;
         boolean combined = false;
         if(transType != null) {combined = transTypeTester(transaction);}
@@ -46,7 +49,7 @@ public class TransactionRequest extends PredicateRequest{
     }
 
     @Override
-    protected boolean andCombiner(Testable toTest) {
+    protected boolean andCombiner(Requestable toTest) {
         Transaction transaction = (Transaction) toTest;
         boolean combined = true;
         if(transType != null) {combined = transTypeTester(transaction);}
@@ -92,7 +95,7 @@ public class TransactionRequest extends PredicateRequest{
     /**
      * Builder for a transaction request
      */
-    public static class TransactionRequestBuilder {
+    public static class TransactionRequestBuilder implements RequestBuilder {
         private TransactionType transType = null;
         private Collection<String> wordsDescription = null;
         private Date[] rangeDates = null;
@@ -105,7 +108,7 @@ public class TransactionRequest extends PredicateRequest{
 
         /**
          * Sets the type of transaction to search.<br>
-         * Raises NullPointerException if type is null
+         * Raises {@code NullPointerException} if type is null
          *
          * @param type The type of transaction to search to
          * @return This builder but with type that has been set
@@ -121,8 +124,8 @@ public class TransactionRequest extends PredicateRequest{
 
         /**
          * Sets a copy of the words given to search in the description.<br>
-         * Raises NullPointerException if words is null.<br>
-         * Raises IllegalArgumentException if words represents the empty collection.<br>
+         * Raises {@code NullPointerException} if words is null.<br>
+         * Raises {@code IllegalArgumentException} if words represents the empty collection.<br>
          *
          * @param words The group of words, in transaction's description, for a transaction to match this request
          */
@@ -140,8 +143,8 @@ public class TransactionRequest extends PredicateRequest{
 
         /**
          * Sets the range of dates to search.<br>
-         * Raises NullPointerException if from or to are null.<br>
-         * Raises IllegalArgumentException if from is before to.
+         * Raises {@code NullPointerException} if from or to are null.<br>
+         * Raises {@code IllegalArgumentException} if from is before to.
          *
          * @param from The starting date for a transaction to match this request (included)
          * @param to The ending date for a transaction to match this request (included)
@@ -160,30 +163,31 @@ public class TransactionRequest extends PredicateRequest{
 
         /**
          * Sets the group of tags (a copy) to search.<br>
-         * Raises NullPointerException if mandatoryTags is null.<br>
-         * Raises IllegalArgumentException if:<br>
-         *      -mandatoryTags represents the empty collection.<br>
+         * Raises {@code NullPointerException} if mandatoryTags is null.<br>
+         * Raises {@code IllegalArgumentException} if:<br>
+         *      -tags represents the empty collection.<br>
          *
-         * @param mandatoryTags The group of tags to search
+         * @param tags The group of tags to search
          */
-        public TransactionRequest.TransactionRequestBuilder withTags(Collection<Tag> mandatoryTags){
-            if(mandatoryTags == null){
+        public TransactionRequest.TransactionRequestBuilder withTags(Collection<Tag> tags){
+            if(tags == null){
                 throw new NullPointerException("Tags are null");
             }
-            if(mandatoryTags.size() <= 0){
+            if(tags.size() <= 0){
                 throw new IllegalArgumentException("Tags must not be empty");
             }
 
-            this.tags = new ArrayList<>(mandatoryTags);
+            this.tags = new ArrayList<>(tags);
             return this;
         }
 
         /**
          * Builds a new request for movements after setting at least 1 parameter to match.<br>
-         * Raises IllegalStateException if none of the parameters has been set<br>
+         * Raises {@code IllegalStateException} if none of the parameters has been set<br>
          *
          * @return A new request for searching movements
          */
+        @Override
         public TransactionRequest build(){
             if(transType == null && rangeDates == null && wordsDescription == null && tags == null){
                 throw new IllegalStateException("At least one parameter must be set to request");
