@@ -1,4 +1,4 @@
-package requests.factory.specifiers;
+package requests.specifiers;
 
 /**
  * This enumerator represents the possible

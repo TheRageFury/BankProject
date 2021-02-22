@@ -3,7 +3,7 @@ package requests.factory.classes;
 import domain.Tag;
 import requests.applicable.RequestBuilder;
 import requests.classes.MovementRequest;
-import requests.factory.specifiers.MovementRequestParameters;
+import requests.specifiers.MovementRequestParameters;
 import utilities.time.Time;
 
 import java.util.Collection;
