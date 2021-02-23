@@ -2,7 +2,7 @@ package requests.specifiers;
 
 /**
  * This enumerator represents the possible
- * parameters for a movement's request.
+ * parameters for a movement request.
  */
 public enum MovementRequestParameters {
     RANGE_QUANTITY,

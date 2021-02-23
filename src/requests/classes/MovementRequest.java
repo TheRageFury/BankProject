@@ -3,10 +3,15 @@ package requests.classes;
 import domain.Movement;
 import domain.Tag;
 import requests.RequestedObjectType;
+import requests.applicable.ParameterSettersExposer;
 import requests.applicable.RequestBuilder;
 import requests.applicable.Requestable;
+import requests.specifiers.MovementRequestParameters;
+import requests.specifiers.TransactionRequestParameters;
 import utilities.time.Time;
 import utilities.time.TimeComparisonResult;
+
+import java.lang.reflect.Method;
 import java.util.*;
 
 /**
@@ -95,7 +100,7 @@ public class MovementRequest extends PredicateRequest {
     /**
      * Builder for a movement request
      */
-    public static class MovementRequestBuilder implements RequestBuilder {
+    public static class MovementRequestBuilder implements RequestBuilder<MovementRequestParameters> {
         private double[] rangeQuantity = null;
         private Collection<String> wordsDescription = null;
         private Time[] rangeTime = null;
@@ -201,6 +206,18 @@ public class MovementRequest extends PredicateRequest {
             }
 
             return new MovementRequest(rangeQuantity, wordsDescription, rangeTime, tags);
+        }
+
+        @Override
+        public Map<MovementRequestParameters, Method> getExposedMethods() throws NoSuchMethodException {
+            Map<MovementRequestParameters, Method> result = new HashMap<>();
+
+            result.put(MovementRequestParameters.RANGE_QUANTITY, this.getClass().getMethod("withQuantity", double.class, double.class));
+            result.put(MovementRequestParameters.RANGE_TIME, this.getClass().getMethod("withTime", Time.class, Time.class));
+            result.put(MovementRequestParameters.GROUP_TAGS, this.getClass().getMethod("withTags", Collection.class));
+            result.put(MovementRequestParameters.GROUP_WORDS, this.getClass().getMethod("withWordsInDescription", Collection.class));
+
+            return result;
         }
     }
 }

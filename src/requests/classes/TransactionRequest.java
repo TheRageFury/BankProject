@@ -6,7 +6,10 @@ import domain.TransactionType;
 import requests.RequestedObjectType;
 import requests.applicable.RequestBuilder;
 import requests.applicable.Requestable;
+import requests.specifiers.TransactionRequestParameters;
+import utilities.time.Time;
 
+import java.lang.reflect.Method;
 import java.util.*;
 
 /**
@@ -95,7 +98,7 @@ public class TransactionRequest extends PredicateRequest {
     /**
      * Builder for a transaction request
      */
-    public static class TransactionRequestBuilder implements RequestBuilder {
+    public static class TransactionRequestBuilder implements RequestBuilder<TransactionRequestParameters> {
         private TransactionType transType = null;
         private Collection<String> wordsDescription = null;
         private Date[] rangeDates = null;
@@ -113,7 +116,7 @@ public class TransactionRequest extends PredicateRequest {
          * @param type The type of transaction to search to
          * @return This builder but with type that has been set
          */
-        public TransactionRequestBuilder withQuantity(TransactionType type){
+        public TransactionRequestBuilder withType(TransactionType type){
             if(type == null){
                 throw new NullPointerException("Type is null");
             }
@@ -194,6 +197,18 @@ public class TransactionRequest extends PredicateRequest {
             }
 
             return new TransactionRequest(transType, wordsDescription, rangeDates, tags);
+        }
+
+        @Override
+        public Map<TransactionRequestParameters, Method> getExposedMethods() throws NoSuchMethodException {
+            Map<TransactionRequestParameters, Method> result = new HashMap<>();
+
+            result.put(TransactionRequestParameters.SINGLE_TYPE, this.getClass().getMethod("withType", TransactionType.class));
+            result.put(TransactionRequestParameters.RANGE_DATES, this.getClass().getMethod("withDates", Date.class, Date.class));
+            result.put(TransactionRequestParameters.GROUP_TAGS, this.getClass().getMethod("withTags", Collection.class));
+            result.put(TransactionRequestParameters.GROUP_WORDS, this.getClass().getMethod("withWordsInDescription", Collection.class));
+
+            return result;
         }
     }
 }

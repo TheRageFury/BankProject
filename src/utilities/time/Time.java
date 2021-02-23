@@ -76,8 +76,9 @@ public class Time {
 
     /**
      * Compare this time and another one returning a TimeComparisonResult value indicating<br>
-     * if the two are equals, the other is after this and vice versa.<br>
-     * Raises UnsupportedOperationException if the equals() method has recognized the twos as "not equal" but they are the same time (as hour, minute, second)
+     * if the two are equals, if the other is after this and/or vice versa.<br>
+     * Raises {@code UnsupportedOperationException} if the equals() method has recognized the twos as "not equal"<br>
+     * but they are symbolically the same time (as hour, minute, second).
      *
      * @param other The other time object to be compared with this
      * @return A TimeComparisonResult which indicates if the two are equals, if the other is after this and vice versa

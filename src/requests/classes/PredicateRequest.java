@@ -10,6 +10,7 @@ import java.util.function.Predicate;
  * This abstraction represents a request whose functioning is
  * based on a predicate object.
  */
+//TODO: Implement BudgetRequest
 public abstract class PredicateRequest implements Request {
     private Predicate<Requestable> tester;
 
